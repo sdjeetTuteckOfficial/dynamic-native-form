@@ -45,6 +45,7 @@ const DynamicForm = ({ schema }) => {
   };
 
   const handleConfirm = (date) => {
+    console.log('val', date, date.toISOString().split('T')[0]);
     setValue(currentFieldName, date.toISOString().split('T')[0]); // Set the date value in the form
     hideDatePicker();
   };
@@ -81,25 +82,62 @@ const DynamicForm = ({ schema }) => {
 
     if (field.type === 'date') {
       return (
-        <View>
-          <Controller
-            name={field.name}
-            control={control}
-            render={({ field: { value } }) => (
+        <Controller
+          name={field.name}
+          control={control}
+          render={({ field: { onChange, value } }) => (
+            <>
               <TouchableOpacity onPress={() => showDatePicker(field.name)}>
                 <Text>{value || field.placeholder}</Text>
               </TouchableOpacity>
-            )}
-          />
-          <DateTimePickerModal
-            isVisible={isDatePickerVisible && currentFieldName === field.name}
-            mode='date'
-            onConfirm={handleConfirm}
-            onCancel={hideDatePicker}
-          />
-        </View>
+              <DateTimePickerModal
+                isVisible={
+                  isDatePickerVisible && currentFieldName === field.name
+                }
+                mode='date'
+                date={value ? new Date(value) : new Date()} // Default date handling
+                onConfirm={(date) => {
+                  onChange(date.toISOString().split('T')[0]);
+                  hideDatePicker();
+                }}
+                onCancel={hideDatePicker}
+              />
+              {errors[field.name] && (
+                <Text style={{ color: 'red' }}>
+                  {errors[field.name].message}
+                </Text>
+              )}
+            </>
+          )}
+        />
       );
     }
+
+    // if (field.type === 'date') {
+    //   console.log('field', field);
+    //   const date = field?.value ? new Date(field?.value) : new Date();
+    //   console.log('date', date);
+    //   return (
+    //     <View>
+    //       <Controller
+    //         name={field.name}
+    //         control={control}
+    //         render={({ field: { value } }) => (
+    //           <TouchableOpacity onPress={() => showDatePicker(field.name)}>
+    //             <Text>{value || field.placeholder}</Text>
+    //           </TouchableOpacity>
+    //         )}
+    //       />
+    //       <DateTimePickerModal
+    //         isVisible={isDatePickerVisible && currentFieldName === field.name}
+    //         mode='date'
+    //         date={date}
+    //         onConfirm={handleConfirm}
+    //         onCancel={hideDatePicker}
+    //       />
+    //     </View>
+    //   );
+    // }
 
     if (field.type === 'text' || field.type === 'number') {
       return (
@@ -136,6 +174,9 @@ const DynamicForm = ({ schema }) => {
         <View key={field.name} style={{ marginBottom: 15 }}>
           <Text>{field.label}</Text>
           {renderField(field)}
+          {errors[field.name] && (
+            <Text style={{ color: 'red' }}>{errors[field.name].message}</Text>
+          )}
         </View>
       ))}
       <TouchableOpacity
