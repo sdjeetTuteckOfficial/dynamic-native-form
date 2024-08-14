@@ -69,23 +69,23 @@ export const schema = {
       order: 5,
       rules: yup.date().required('Date of Birth is required'),
     },
-    // {
-    //   name: 'fileUpload',
-    //   label: 'File Upload',
-    //   type: 'text', // Use 'text' and handle file upload separately
-    //   placeholder: 'Upload your file',
-    //   order: 6,
-    //   rules: yup
-    //     .mixed()
-    //     .required('File upload is required')
-    //     .test('fileSize', 'File is too large', (value) => {
-    //       return value ? value.size <= 5242880 : true; // limit: 5MB
-    //     })
-    //     .test('fileType', 'Unsupported file type', (value) => {
-    //       return value
-    //         ? ['image/jpeg', 'image/png'].includes(value.type)
-    //         : true; // Allowed file types
-    //     }),
-    // },
+    {
+      name: 'fileUpload',
+      label: 'File Upload',
+      type: 'file',
+      placeholder: 'Upload your file',
+      order: 6,
+      rules: yup
+        .mixed()
+        .required('File upload is required')
+        .test('fileSize', 'File is too large', (value) => {
+          return value ? value.size <= 5242880 : true; // limit: 5MB
+        })
+        .test('fileType', 'Unsupported file type', (value) => {
+          return value
+            ? ['image/jpeg', 'image/png'].includes(value.type)
+            : true; // Allowed file types
+        }),
+    },
   ],
 };

@@ -5,11 +5,11 @@ import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import * as yup from 'yup';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { Dropdown } from 'react-native-element-dropdown';
+import DocumentPicker from 'react-native-document-picker';
 
 const DynamicForm = ({ schema }) => {
   const sortedSchema = schema.fields.sort((a, b) => a.order - b.order);
 
-  // Create validation schema using yup
   const validationSchema = yup.object().shape(
     sortedSchema.reduce((acc, field) => {
       acc[field.name] = field.rules || yup.string();
@@ -21,7 +21,6 @@ const DynamicForm = ({ schema }) => {
     control,
     handleSubmit,
     setValue,
-    getValues,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(validationSchema),
@@ -44,10 +43,19 @@ const DynamicForm = ({ schema }) => {
     setDatePickerVisibility(false);
   };
 
-  const handleConfirm = (date) => {
-    console.log('val', date, date.toISOString().split('T')[0]);
-    setValue(currentFieldName, date.toISOString().split('T')[0]); // Set the date value in the form
-    hideDatePicker();
+  const handleFileUpload = async (fieldName) => {
+    try {
+      const res = await DocumentPicker.pick({
+        type: [DocumentPicker.types.images],
+      });
+      setValue(fieldName, res); // Store the file object in the form state
+    } catch (err) {
+      if (DocumentPicker.isCancel(err)) {
+        console.log('User canceled the picker');
+      } else {
+        throw err;
+      }
+    }
   };
 
   const renderField = (field) => {
@@ -95,7 +103,7 @@ const DynamicForm = ({ schema }) => {
                   isDatePickerVisible && currentFieldName === field.name
                 }
                 mode='date'
-                date={value ? new Date(value) : new Date()} // Default date handling
+                date={value ? new Date(value) : new Date()}
                 onConfirm={(date) => {
                   onChange(date.toISOString().split('T')[0]);
                   hideDatePicker();
@@ -113,31 +121,38 @@ const DynamicForm = ({ schema }) => {
       );
     }
 
-    // if (field.type === 'date') {
-    //   console.log('field', field);
-    //   const date = field?.value ? new Date(field?.value) : new Date();
-    //   console.log('date', date);
-    //   return (
-    //     <View>
-    //       <Controller
-    //         name={field.name}
-    //         control={control}
-    //         render={({ field: { value } }) => (
-    //           <TouchableOpacity onPress={() => showDatePicker(field.name)}>
-    //             <Text>{value || field.placeholder}</Text>
-    //           </TouchableOpacity>
-    //         )}
-    //       />
-    //       <DateTimePickerModal
-    //         isVisible={isDatePickerVisible && currentFieldName === field.name}
-    //         mode='date'
-    //         date={date}
-    //         onConfirm={handleConfirm}
-    //         onCancel={hideDatePicker}
-    //       />
-    //     </View>
-    //   );
-    // }
+    if (field.type === 'file') {
+      return (
+        <Controller
+          name={field.name}
+          control={control}
+          render={({ field: { onChange, value } }) => (
+            <>
+              <TouchableOpacity
+                onPress={() => handleFileUpload(field.name)}
+                style={{
+                  height: 40,
+                  borderColor: 'gray',
+                  borderWidth: 1,
+                  borderRadius: 5,
+                  justifyContent: 'center',
+                  paddingHorizontal: 8,
+                }}
+              >
+                <Text>
+                  {value?.name || field.placeholder || 'Upload a file'}
+                </Text>
+              </TouchableOpacity>
+              {errors[field.name] && (
+                <Text style={{ color: 'red' }}>
+                  {errors[field.name].message}
+                </Text>
+              )}
+            </>
+          )}
+        />
+      );
+    }
 
     if (field.type === 'text' || field.type === 'number') {
       return (
@@ -169,7 +184,6 @@ const DynamicForm = ({ schema }) => {
 
   return (
     <View style={{ padding: 20 }}>
-      {console.log('err', errors)}
       {sortedSchema.map((field) => (
         <View key={field.name} style={{ marginBottom: 15 }}>
           <Text>{field.label}</Text>
