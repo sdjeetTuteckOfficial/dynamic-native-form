@@ -47,20 +47,20 @@ export const schema = {
         .positive('Age must be a positive number')
         .integer('Age must be an integer'),
     },
-    // {
-    //   name: 'country',
-    //   label: 'Country',
-    //   type: 'dropdown',
-    //   placeholder: 'Select your country',
-    //   options: [
-    //     { label: 'USA', value: 'usa' },
-    //     { label: 'Canada', value: 'canada' },
-    //     { label: 'UK', value: 'uk' },
-    //     { label: 'Australia', value: 'australia' },
-    //   ],
-    //   order: 4,
-    //   rules: yup.string().required('Country is required'),
-    // },
+    {
+      name: 'country',
+      label: 'Country',
+      type: 'dropdown',
+      placeholder: 'Select your country',
+      options: [
+        { label: 'USA', value: 'usa' },
+        { label: 'Canada', value: 'canada' },
+        { label: 'UK', value: 'uk' },
+        { label: 'Australia', value: 'australia' },
+      ],
+      order: 4,
+      rules: yup.string().required('Country is required'),
+    },
     {
       name: 'dateOfBirth',
       label: 'Date of Birth',
