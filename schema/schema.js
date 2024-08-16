@@ -1,11 +1,9 @@
-import * as yup from 'yup';
-
 export const schema = {
   config: {
     defaultValues: {
       firstName: '',
       lastName: '',
-      age: '',
+      age: null,
       country: null,
       dateOfBirth: null,
       fileUpload: null,
@@ -24,7 +22,11 @@ export const schema = {
       type: 'text',
       placeholder: 'Enter your first name',
       order: 1,
-      rules: yup.string().required('First name is required'),
+      rules: {
+        type: 'string',
+        required: true,
+        message: 'First name is required',
+      },
     },
     {
       name: 'lastName',
@@ -32,20 +34,26 @@ export const schema = {
       type: 'text',
       placeholder: 'Enter your last name',
       order: 2,
-      rules: yup.string().required('Last name is required'),
+      rules: {
+        type: 'string',
+        required: true,
+        message: 'Last name is required',
+      },
     },
     {
       name: 'age',
       label: 'Age',
-      type: 'number', // Use 'text' and handle number conversion in form handling
+      type: 'number',
       placeholder: 'Enter your age',
       order: 3,
-      rules: yup
-        .number()
-        .typeError('Age must be a number')
-        .required('Age is required')
-        .positive('Age must be a positive number')
-        .integer('Age must be an integer'),
+      rules: {
+        type: 'number',
+        required: true,
+        message: 'Age is required',
+        typeError: 'Age must be a number',
+        positive: true,
+        integer: true,
+      },
     },
     {
       name: 'country',
@@ -59,7 +67,11 @@ export const schema = {
         { label: 'Australia', value: 'australia' },
       ],
       order: 4,
-      rules: yup.string().required('Country is required'),
+      rules: {
+        type: 'string',
+        required: true,
+        message: 'Country is required',
+      },
     },
     {
       name: 'dateOfBirth',
@@ -67,25 +79,12 @@ export const schema = {
       type: 'date',
       placeholder: 'Select your date of birth',
       order: 5,
-      rules: yup.date().required('Date of Birth is required'),
+      rules: {
+        type: 'date',
+        required: false,
+        nullable: true,
+        message: 'Date of Birth is required',
+      },
     },
-    // {
-    //   name: 'fileUpload',
-    //   label: 'File Upload',
-    //   type: 'text', // Use 'text' and handle file upload separately
-    //   placeholder: 'Upload your file',
-    //   order: 6,
-    //   rules: yup
-    //     .mixed()
-    //     .required('File upload is required')
-    //     .test('fileSize', 'File is too large', (value) => {
-    //       return value ? value.size <= 5242880 : true; // limit: 5MB
-    //     })
-    //     .test('fileType', 'Unsupported file type', (value) => {
-    //       return value
-    //         ? ['image/jpeg', 'image/png'].includes(value.type)
-    //         : true; // Allowed file types
-    //     }),
-    // },
   ],
 };
