@@ -21,7 +21,7 @@ const App = () => {
 
     try {
       setLoading(true);
-      const response = await fetch(`${baseUrl}/get-json/1`);
+      const response = await fetch(`${baseUrl}/get-json/3`);
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
