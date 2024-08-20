@@ -1,12 +1,22 @@
-import { useEffect, useState } from 'react';
-import { Platform, ActivityIndicator } from 'react-native';
-import { ThemeProvider } from '@rneui/themed';
-import theme from './theme/theme';
-import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
-import { Header } from '@rneui/base';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  Platform,
+  ActivityIndicator,
+} from 'react-native';
 import DynamicForm from './components/DynamicForm/DynamicFrom';
+import { schema } from './schema/schema';
+import { ThemeProvider } from '@rneui/themed';
+import { Header } from '@rneui/base';
+import theme from './theme/theme';
 
 const App = () => {
+  const [currentFormId, setCurrentFormId] = useState(schema.forms[0].id);
+  const [formIndex, setFormIndex] = useState(0);
+  const [formData, setFormData] = useState({});
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -21,7 +31,7 @@ const App = () => {
 
     try {
       setLoading(true);
-      const response = await fetch(`${baseUrl}/get-json/1`);
+      const response = await fetch(`${baseUrl}/get-json/4`);
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
@@ -36,8 +46,20 @@ const App = () => {
     }
   };
 
+  const handleFormChange = () => {
+    setCurrentFormId(schema.forms[formIndex + 1].id);
+    setFormIndex((prev) => prev + 1);
+  };
+
+  const handleFormSubmit = (data) => {
+    console.log('blabla bla', data);
+    setFormData(data);
+    handleFormChange();
+  };
+
   return (
     <ThemeProvider theme={theme}>
+      {console.log('form', formData)}
       <SafeAreaView style={styles.container}>
         <Header
           centerComponent={{
@@ -61,7 +83,12 @@ const App = () => {
           ) : (
             <>
               <Text style={styles.text}>Hello, React Native!</Text>
-              <DynamicForm schema={data} onSubmit={() => {}} />
+              <DynamicForm
+                forms={data.forms}
+                currentFormId={currentFormId}
+                onSubmitData={handleFormSubmit}
+                onFormChange={handleFormChange}
+              />
             </>
           )}
         </View>

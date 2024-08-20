@@ -1,16 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { View, Text, TouchableOpacity } from 'react-native';
 import * as yup from 'yup';
 import FormFieldWrapper from './FormFieldWrapper/FormFieldWrapper';
 import { parseRules } from '../../utilities/functions/parser';
 
-const DynamicForm = ({ schema }) => {
-  const sortedSchema = schema.fields.sort((a, b) => a.order - b.order);
+const DynamicForm = ({ forms, currentFormId, onSubmitData, onFormChange }) => {
+  // const [userId, setUserId] = useState(null);
+
+  const form = forms.find((f) => f.id === currentFormId);
+
+  if (!form) {
+    return <Text>Form not found</Text>;
+  }
+
+  const { config, fields } = form;
+
+  const sortedFields = fields.sort((a, b) => a.order - b.order);
 
   const validationSchema = yup.object().shape(
-    sortedSchema.reduce((acc, field) => {
+    sortedFields.reduce((acc, field) => {
       acc[field.name] = parseRules(field.rules);
       return acc;
     }, {})
@@ -20,19 +30,20 @@ const DynamicForm = ({ schema }) => {
     control,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm({
     resolver: yupResolver(validationSchema),
-    defaultValues: schema.config.defaultValues,
+    defaultValues: config.defaultValues,
   });
 
-  const onSubmit = (data) => {
-    console.log('Form data:', data);
+  const handleFormSubmit = (data) => {
+    console.log('data', data);
+    onSubmitData(data);
   };
 
   return (
-    <View style={{ padding: 20 }}>
-      {console.log('Form errors:', errors)}
-      {sortedSchema.map((field) => (
+    <View style={{ padding: 20, marginBottom: 30 }}>
+      {sortedFields.map((field) => (
         <FormFieldWrapper
           key={field.name}
           control={control}
@@ -41,10 +52,17 @@ const DynamicForm = ({ schema }) => {
         />
       ))}
       <TouchableOpacity
-        onPress={handleSubmit(onSubmit)}
-        style={{ backgroundColor: 'blue', padding: 10, borderRadius: 5 }}
+        onPress={handleSubmit(handleFormSubmit)}
+        style={{
+          backgroundColor: config.submitButton.color,
+          padding: 10,
+          borderRadius: 5,
+          alignSelf: config.submitButton.justifyContent,
+        }}
       >
-        <Text style={{ color: 'white', textAlign: 'center' }}>Submit</Text>
+        <Text style={{ color: 'white', textAlign: 'center' }}>
+          {config.submitButton.formName}
+        </Text>
       </TouchableOpacity>
     </View>
   );
