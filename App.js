@@ -1,12 +1,21 @@
-import { useEffect, useState } from 'react';
-import { Platform, ActivityIndicator } from 'react-native';
-import { ThemeProvider } from '@rneui/themed';
-import theme from './theme/theme';
-import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
-import { Header } from '@rneui/base';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  Platform,
+  ActivityIndicator,
+} from 'react-native';
 import DynamicForm from './components/DynamicForm/DynamicFrom';
+import { ThemeProvider } from '@rneui/themed';
+import { Header } from '@rneui/base';
+import theme from './theme/theme';
 
 const App = () => {
+  const [currentFormId, setCurrentFormId] = useState(null);
+  const [formIndex, setFormIndex] = useState(0);
+  const [formData, setFormData] = useState({});
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -15,13 +24,20 @@ const App = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    // Set the initial form ID once data is loaded
+    if (data?.forms?.length > 0) {
+      setCurrentFormId(data.forms[0].id);
+    }
+  }, [data]);
+
   const fetchData = async () => {
     const baseUrl =
       Platform.OS === 'ios' ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
 
     try {
       setLoading(true);
-      const response = await fetch(`${baseUrl}/get-json/1`);
+      const response = await fetch(`${baseUrl}/get-json/5`);
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
@@ -36,8 +52,45 @@ const App = () => {
     }
   };
 
+  const handleFormChange = () => {
+    const nextFormIndex = formIndex + 1;
+    if (nextFormIndex < data.forms.length) {
+      setCurrentFormId(data.forms[nextFormIndex].id);
+      setFormIndex(nextFormIndex);
+    }
+  };
+
+  const handleFormSubmit = (formData) => {
+    setFormData((prevData) => ({ ...prevData, ...formData }));
+    handleFormChange();
+  };
+
+  let content;
+  if (loading) {
+    content = <ActivityIndicator size='large' color={theme.colors.primary} />;
+  } else if (error) {
+    content = <Text style={styles.errorText}>Error: {error}</Text>;
+  } else if (currentFormId) {
+    content = (
+      <>
+        <Text style={styles.text}>
+          {data?.forms[formIndex]?.config?.submitButton?.formName}
+        </Text>
+        <DynamicForm
+          forms={data?.forms}
+          currentFormId={currentFormId}
+          onSubmitData={handleFormSubmit}
+          onFormChange={handleFormChange}
+        />
+      </>
+    );
+  } else {
+    content = <Text style={styles.text}>No forms available.</Text>;
+  }
+
   return (
     <ThemeProvider theme={theme}>
+      {console.log('form', formData)}
       <SafeAreaView style={styles.container}>
         <Header
           centerComponent={{
@@ -53,18 +106,7 @@ const App = () => {
             paddingTop: 35,
           }}
         />
-        <View style={styles.content}>
-          {loading ? (
-            <ActivityIndicator size='large' color={theme.colors.primary} />
-          ) : error ? (
-            <Text style={styles.errorText}>Error: {error}</Text>
-          ) : (
-            <>
-              <Text style={styles.text}>Hello, React Native!</Text>
-              <DynamicForm schema={data} onSubmit={() => {}} />
-            </>
-          )}
-        </View>
+        <View style={styles.content}>{content}</View>
       </SafeAreaView>
     </ThemeProvider>
   );
