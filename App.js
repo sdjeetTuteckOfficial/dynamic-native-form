@@ -8,13 +8,12 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import DynamicForm from './components/DynamicForm/DynamicFrom';
-import { schema } from './schema/schema';
 import { ThemeProvider } from '@rneui/themed';
 import { Header } from '@rneui/base';
 import theme from './theme/theme';
 
 const App = () => {
-  const [currentFormId, setCurrentFormId] = useState(schema.forms[0].id);
+  const [currentFormId, setCurrentFormId] = useState(null);
   const [formIndex, setFormIndex] = useState(0);
   const [formData, setFormData] = useState({});
   const [data, setData] = useState(null);
@@ -25,13 +24,20 @@ const App = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    // Set the initial form ID once data is loaded
+    if (data?.forms?.length > 0) {
+      setCurrentFormId(data.forms[0].id);
+    }
+  }, [data]);
+
   const fetchData = async () => {
     const baseUrl =
       Platform.OS === 'ios' ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
 
     try {
       setLoading(true);
-      const response = await fetch(`${baseUrl}/get-json/4`);
+      const response = await fetch(`${baseUrl}/get-json/5`);
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
@@ -47,12 +53,15 @@ const App = () => {
   };
 
   const handleFormChange = () => {
-    setCurrentFormId(schema.forms[formIndex + 1].id);
-    setFormIndex((prev) => prev + 1);
+    const nextFormIndex = formIndex + 1;
+    if (nextFormIndex < data.forms.length) {
+      setCurrentFormId(data.forms[nextFormIndex].id);
+      setFormIndex(nextFormIndex);
+    }
   };
 
-  const handleFormSubmit = (data) => {
-    setFormData(data);
+  const handleFormSubmit = (formData) => {
+    setFormData((prevData) => ({ ...prevData, ...formData }));
     handleFormChange();
   };
 
@@ -61,18 +70,22 @@ const App = () => {
     content = <ActivityIndicator size='large' color={theme.colors.primary} />;
   } else if (error) {
     content = <Text style={styles.errorText}>Error: {error}</Text>;
-  } else {
+  } else if (currentFormId) {
     content = (
       <>
-        <Text style={styles.text}>Hello, React Native!</Text>
+        <Text style={styles.text}>
+          {data?.forms[formIndex]?.config?.submitButton?.formName}
+        </Text>
         <DynamicForm
-          forms={data.forms}
+          forms={data?.forms}
           currentFormId={currentFormId}
           onSubmitData={handleFormSubmit}
           onFormChange={handleFormChange}
         />
       </>
     );
+  } else {
+    content = <Text style={styles.text}>No forms available.</Text>;
   }
 
   return (

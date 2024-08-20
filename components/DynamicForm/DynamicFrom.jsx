@@ -7,10 +7,7 @@ import FormFieldWrapper from './FormFieldWrapper/FormFieldWrapper';
 import { parseRules } from '../../utilities/functions/parser';
 
 const DynamicForm = ({ forms, currentFormId, onSubmitData, onFormChange }) => {
-  // const [userId, setUserId] = useState(null);
-
   const form = forms.find((f) => f.id === currentFormId);
-
   if (!form) {
     return <Text>Form not found</Text>;
   }
@@ -37,7 +34,6 @@ const DynamicForm = ({ forms, currentFormId, onSubmitData, onFormChange }) => {
   });
 
   const handleFormSubmit = (data) => {
-    console.log('data', data);
     onSubmitData(data);
   };
 
