@@ -52,10 +52,28 @@ const App = () => {
   };
 
   const handleFormSubmit = (data) => {
-    console.log('blabla bla', data);
     setFormData(data);
     handleFormChange();
   };
+
+  let content;
+  if (loading) {
+    content = <ActivityIndicator size='large' color={theme.colors.primary} />;
+  } else if (error) {
+    content = <Text style={styles.errorText}>Error: {error}</Text>;
+  } else {
+    content = (
+      <>
+        <Text style={styles.text}>Hello, React Native!</Text>
+        <DynamicForm
+          forms={data.forms}
+          currentFormId={currentFormId}
+          onSubmitData={handleFormSubmit}
+          onFormChange={handleFormChange}
+        />
+      </>
+    );
+  }
 
   return (
     <ThemeProvider theme={theme}>
@@ -75,23 +93,7 @@ const App = () => {
             paddingTop: 35,
           }}
         />
-        <View style={styles.content}>
-          {loading ? (
-            <ActivityIndicator size='large' color={theme.colors.primary} />
-          ) : error ? (
-            <Text style={styles.errorText}>Error: {error}</Text>
-          ) : (
-            <>
-              <Text style={styles.text}>Hello, React Native!</Text>
-              <DynamicForm
-                forms={data.forms}
-                currentFormId={currentFormId}
-                onSubmitData={handleFormSubmit}
-                onFormChange={handleFormChange}
-              />
-            </>
-          )}
-        </View>
+        <View style={styles.content}>{content}</View>
       </SafeAreaView>
     </ThemeProvider>
   );
